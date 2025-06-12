@@ -1,9 +1,8 @@
-
 import os
-import openai
-import pinecone
 from fastapi import FastAPI
 from pydantic import BaseModel
+from openai import OpenAI
+import pinecone
 
 # For local development you can use python-dotenv
 try:
@@ -15,14 +14,16 @@ except ModuleNotFoundError:
 # -----------------------------
 # API Keys & Pinecone Setup
 # -----------------------------
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai_api_key = os.getenv("OPENAI_API_KEY")
 pinecone_key = os.getenv("PINECONE_API_KEY")
 pinecone_env = os.getenv("PINECONE_ENVIRONMENT")
 
-if not (openai.api_key and pinecone_key and pinecone_env):
+if not (openai_api_key and pinecone_key and pinecone_env):
     raise RuntimeError(
         "Environment variables OPENAI_API_KEY, PINECONE_API_KEY, and PINECONE_ENVIRONMENT must be set."
     )
+
+client = OpenAI(api_key=openai_api_key)
 
 pc = pinecone.Pinecone(api_key=pinecone_key, environment=pinecone_env)
 index = pc.Index("aflac-brain")
@@ -33,11 +34,12 @@ class Question(BaseModel):
     query: str
 
 def generate_aflac_response(question: str, top_k: int = 5) -> str:
-    # Embed the question
-    question_embedding = openai.Embedding.create(
-        input=question,
+    # Embed the question using OpenAI v1 SDK
+    response = client.embeddings.create(
+        input=[question],
         model="text-embedding-3-large"
-    )["data"][0]["embedding"]
+    )
+    question_embedding = response.data[0].embedding
 
     # Retrieve from Pinecone
     result = index.query(
@@ -58,13 +60,13 @@ Knowledge:
 Prospect: {question}
 Aflac Representative:"""
 
-    response = openai.ChatCompletion.create(
+    chat_response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7
     )
 
-    return response['choices'][0]['message']['content']
+    return chat_response.choices[0].message.content
 
 @app.post("/ask")
 async def ask_agent(question: Question):
