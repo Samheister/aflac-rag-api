@@ -34,10 +34,10 @@ class Question(BaseModel):
     query: str
 
 def generate_aflac_response(question: str, top_k: int = 5) -> str:
-    # Embed the question using OpenAI v1 SDK
+    # ✅ Use the correct model that matches Pinecone index (1536D)
     response = client.embeddings.create(
         input=[question],
-        model="text-embedding-3-large"
+        model="text-embedding-ada-002"
     )
     question_embedding = response.data[0].embedding
 
