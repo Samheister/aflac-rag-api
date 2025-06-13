@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from openai import OpenAI
 import pinecone
 
-# For local development you can use python-dotenv
+# Load .env file if available
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -28,13 +28,23 @@ client = OpenAI(api_key=openai_api_key)
 pc = pinecone.Pinecone(api_key=pinecone_key, environment=pinecone_env)
 index = pc.Index("aflac-brain")
 
+# -----------------------------
+# FastAPI Setup
+# -----------------------------
 app = FastAPI()
 
+# Import tools router
+from tools import router as tools_router
+app.include_router(tools_router)
+
+# -----------------------------
+# Chat API Endpoint
+# -----------------------------
 class Question(BaseModel):
     query: str
 
 def generate_aflac_response(question: str, top_k: int = 5) -> str:
-    # ✅ Use the correct model that matches Pinecone index (1536D)
+    # Embed question
     response = client.embeddings.create(
         input=[question],
         model="text-embedding-ada-002"
