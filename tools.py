@@ -10,9 +10,9 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name("your_credentials
 gc = gspread.authorize(credentials)
 
 # Open the spreadsheet and worksheet
-sheet = gc.open("Aflac_Leads").worksheet("Leads")  # Replace with your actual names
+sheet = gc.open("Aflac_Leads").worksheet("Leads")  # Adjust if different
 
-@router.get("/tools/get_next_lead")
+@router.get("/get_next_lead")
 def get_next_lead():
     leads = sheet.get_all_records()
     for lead in leads:
@@ -26,5 +26,3 @@ def get_next_lead():
                 "employee_count": lead.get("EmployeeCount", "")
             }
     return {"message": "No more uncontacted leads"}
-
-
