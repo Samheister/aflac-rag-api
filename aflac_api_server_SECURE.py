@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from openai import OpenAI
 import pinecone
 
-# Load .env file if available
+# Load .env if present
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -33,9 +33,9 @@ index = pc.Index("aflac-brain")
 # -----------------------------
 app = FastAPI()
 
-# Import tools router
+# ✅ Import and include your tools router
 from tools import router as tools_router
-app.include_router(tools_router)
+app.include_router(tools_router, prefix="/tools")  # <-- Ensure prefix matches Postman URL
 
 # -----------------------------
 # Chat API Endpoint
@@ -44,21 +44,20 @@ class Question(BaseModel):
     query: str
 
 def generate_aflac_response(question: str, top_k: int = 5) -> str:
-    # Embed question
+    # Embed the question
     response = client.embeddings.create(
         input=[question],
         model="text-embedding-ada-002"
     )
     question_embedding = response.data[0].embedding
 
-    # Retrieve from Pinecone
+    # Query Pinecone
     result = index.query(
         vector=question_embedding,
         top_k=top_k,
         include_metadata=True
     )
 
-    # Build knowledge context
     context = "\n---\n".join([m['metadata']['text'] for m in result['matches']])
 
     prompt = f"""You are a confident and professional Aflac representative.
