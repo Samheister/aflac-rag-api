@@ -1,8 +1,9 @@
 fastapi
 uvicorn
-openai
+gspread
+oauth2client
 pinecone-client==3.0.0
 pandas
 tqdm
 python-dotenv
-oauth2client
+openai
