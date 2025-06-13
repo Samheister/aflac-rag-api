@@ -19,7 +19,7 @@ gc = gspread.authorize(credentials)
 # Open spreadsheet and worksheet
 sheet = gc.open("Aflac_Leads").worksheet("Leads")  # Sheet name and tab name must match exactly
 
-@router.get("/tools/get_next_lead")
+@router.get("/get_next_lead")
 def get_next_lead():
     leads = sheet.get_all_records()
     for lead in leads:

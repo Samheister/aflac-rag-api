@@ -24,7 +24,6 @@ if not (openai_api_key and pinecone_key and pinecone_env):
     )
 
 client = OpenAI(api_key=openai_api_key)
-
 pc = pinecone.Pinecone(api_key=pinecone_key, environment=pinecone_env)
 index = pc.Index("aflac-brain")
 
@@ -33,9 +32,9 @@ index = pc.Index("aflac-brain")
 # -----------------------------
 app = FastAPI()
 
-# ✅ Import and include your tools router
+# Import and include your tools router
 from tools import router as tools_router
-app.include_router(tools_router, prefix="/tools")  # <-- Ensure prefix matches Postman URL
+app.include_router(tools_router, prefix="/tools")  # Ensure this matches the route in tools.py
 
 # -----------------------------
 # Chat API Endpoint
